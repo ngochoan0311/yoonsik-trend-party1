@@ -1,7 +1,6 @@
 import { Handler } from '@netlify/functions';
 
-// BẮT BUỘC: Thay thế bằng URL Google Apps Script Web App (kết thúc bằng /exec) của bạn
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz6ysGGvHghxns-b0fOxMZdY2c8qnRGb27iU6IZ3wPJ_WGJMrwBxVImBK9BgpCTkBWd/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz6ysGGvHghxns-b0fOxMZdY2c8qnRGb27iU6IZ3wPJ_WGJMrwBxVImBK9BgpCTkBWd/exec'; // Thay link của bạn vào đây
 
 export const handler: Handler = async (event) => {
   const headers = {
@@ -11,26 +10,24 @@ export const handler: Handler = async (event) => {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   };
 
-  // Xử lý CORS preflight request
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
   }
 
   try {
-    // 1. Xử lý GET: Lấy danh sách người tham gia
     if (event.httpMethod === 'GET') {
       const response = await fetch(WEB_APP_URL, {
         method: 'GET',
-        redirect: 'follow', // Cho phép tự động theo vết chuyển hướng (Redirect 302) của Google
+        redirect: 'follow',
       });
 
       if (!response.ok) {
-        throw new Error(`Google Apps Script HTTP Error: ${response.status}`);
+        throw new Error(`Google Apps Script Error: ${response.status}`);
       }
 
       const rawData = await response.json();
 
-      // Kiểm tra nếu rawData là mảng hợp lệ
+      // Nếu rawData không phải mảng (hoặc bị lỗi), trả về mảng rỗng để không sập web
       if (!Array.isArray(rawData)) {
         return {
           statusCode: 200,
@@ -39,14 +36,14 @@ export const handler: Handler = async (event) => {
         };
       }
 
-      // Ánh xạ dữ liệu từ cột tiếng Việt sang định dạng Frontend yêu cầu
+      // Ánh xạ dữ liệu an toàn từng dòng
       const formattedData = rawData.map((item: any, index: number) => ({
         id: index + 1,
-        name: item["Tên người chơi"] || "",
-        twitter: item["Link X"] || "",
-        instagram: item["Link IG"] || "",
+        name: String(item["Tên người chơi"] || "Ẩn danh"),
+        twitter: String(item["Link X"] || ""),
+        instagram: String(item["Link IG"] || ""),
         gaNumber: item["Số GA"] !== undefined && item["Số GA"] !== "" ? Number(item["Số GA"]) : 0,
-        createdAt: item["Thời gian"] || new Date().toISOString(),
+        createdAt: String(item["Thời gian"] || new Date().toISOString()),
       }));
 
       return {
@@ -56,7 +53,6 @@ export const handler: Handler = async (event) => {
       };
     }
 
-    // 2. Xử lý POST: Đăng ký tham gia mới
     if (event.httpMethod === 'POST') {
       const bodyData = JSON.parse(event.body || '{}');
 
