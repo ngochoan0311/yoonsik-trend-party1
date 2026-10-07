@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 10%, #f0f9ff 0, transparent 40%),
+    radial-gradient(circle at 85% 90%, #bae6fd 0, transparent 45%),
+    #e0f2fe;
+}
+
+.btn-babyblue {
+  background-color: #38bdf8;
+  color: white;
+}
+.btn-babyblue:hover:not(:disabled) {
+  background-color: #0284c7;
+}
+.btn-babyblue:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.animate-pop-in { animation: pop-in 0.22s ease-out; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
